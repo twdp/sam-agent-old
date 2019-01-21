@@ -28,7 +28,8 @@ type Permission struct {
 }
 
 func (p *Permission) VerifyUrl(branchId, id int64, sType int8) bool {
-	if sType != OnlyOperationPermission {
+
+	if sType != OnlyOperationPermission && branchId != -1{
 		// 需要验证数据权限
 		hasPermission := false
 		for _, bId := range p.BranchIds {
@@ -42,6 +43,7 @@ func (p *Permission) VerifyUrl(branchId, id int64, sType int8) bool {
 			return false
 		}
 	}
+
 	// 验证操作权限
 	return p.checkPermission(id)
 }

@@ -4,6 +4,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
 	"github.com/astaxie/beego/context"
+	"github.com/astaxie/beego/logs"
 	cache2 "github.com/goburrow/cache"
 	"github.com/hprose/hprose-golang/rpc"
 	"strings"
@@ -48,7 +49,6 @@ func init() {
 		client.UseService(&SamAgent)
 	}
 	agent = &Agent{
-		samAgent: SamAgent,
 		cacheManager: make(map[string]cache.Cache),
 	}
 }
@@ -80,7 +80,6 @@ type isystemInfo struct {
 
 type Agent struct {
 	sync.Mutex
-	samAgent SamAgentFacade
 
 	appKey string
 	secret string
@@ -116,11 +115,12 @@ const (
 )
 
 func (a *Agent) verifyToken(token string) (*UserInfo, error) {
+	a.checkAgent()
 	cache := a.loadCacheByKey(tokenKey)
 	if cache.IsExist(token) {
 		return cache.Get(token).(*UserInfo), nil
 	} else {
-		if u, err := a.samAgent.VerifyToken(token); err != nil {
+		if u, err := SamAgent.VerifyToken(token); err != nil {
 			return u, err
 		} else {
 			cache.Put(token, u, time.Minute)
@@ -129,12 +129,18 @@ func (a *Agent) verifyToken(token string) (*UserInfo, error) {
 	}
 }
 
+func (a *Agent) checkAgent() {
+	if SamAgent == nil {
+		panic("sam agent is nil.")
+	}
+}
 func (a *Agent) loadSysInfo() (*isystemInfo, error) {
+	a.checkAgent()
 	cache := a.loadCacheByKey(systemInfo)
 	if cache.IsExist("---") {
 		return cache.Get("---").(*isystemInfo), nil
 	} else {
-		if s, err := a.samAgent.LoadSystemInfo(a.appKey, a.secret); err != nil {
+		if s, err := SamAgent.LoadSystemInfo(a.appKey, a.secret); err != nil {
 			return nil, err
 		} else {
 			routes := make(map[string][]*Tree)
@@ -148,6 +154,7 @@ func (a *Agent) loadSysInfo() (*isystemInfo, error) {
 				t := &Tree{
 					Tree: *tt,
 					id: v.Id,
+					Type: v.Type,
 				}
 				routes[v.Method] = append(routes[v.Method], t)
 			}
@@ -159,6 +166,15 @@ func (a *Agent) loadSysInfo() (*isystemInfo, error) {
 			cache.Put("---", ss, time.Minute)
 			return ss, nil
 		}
+	}
+}
+
+func (a *Agent) systemStrategy() int8 {
+	if s, err := a.loadSysInfo(); err != nil {
+		logs.Error("load system info failed. strategy: Child")
+		return Child
+	} else {
+		return s.permissionType
 	}
 }
 

@@ -30,7 +30,7 @@ type UserInfo struct {
 	// 手机号  可用于发送验证信息之类的
 	Phone string
 
-	p PermissionMode
+	P *Permission
 }
 
 
@@ -46,14 +46,20 @@ var SamFilter = func(ctx *context.Context) {
 		panic("sam agent is nil. ")
 	}
 
-	var strategy int8 = Anonymous
+	var urlStrategy int8 = Anonymous
 	var id int64 = 0
 
 	if _id, _strategy, err := agent.CheckPermissionStrategy(ctx); err != nil {
 		logs.Error("sam filter error: %v", err)
+		ctx.Output.SetStatus(http.StatusUnauthorized)
+		ctx.ResponseWriter.Write([]byte(err.Error()))
+		return
 	} else {
 		id = _id
-		strategy = _strategy
+		urlStrategy = _strategy
+	}
+
+	if urlStrategy == Anonymous {
 		return
 	}
 
@@ -66,15 +72,18 @@ var SamFilter = func(ctx *context.Context) {
 		if token == "" {
 			token = ctx.GetCookie(SamTokenCookieName)
 		}
+		token = "abc"
 
 		if token == "" {
 			ctx.Output.SetStatus(http.StatusUnauthorized)
 			ctx.ResponseWriter.Write([]byte("请重新登录"))
+			return
 		}
 		// 根据token获取用户信息
 		if us, err := agent.verifyToken(token); err != nil {
 			ctx.Output.SetStatus(http.StatusUnauthorized)
 			ctx.ResponseWriter.Write([]byte(err.Error()))
+			return
 		} else {
 			u = us
 		}
@@ -83,7 +92,7 @@ var SamFilter = func(ctx *context.Context) {
 		u = uu
 	}
 
-	if strategy == OnlyNeedLogin {
+	if urlStrategy == OnlyNeedLogin {
 		return
 	}
 
@@ -98,7 +107,7 @@ var SamFilter = func(ctx *context.Context) {
 		ppId = ppid
 	}
 
-	if u.p == nil || !u.p.VerifyUrl(ppId,  id, strategy) {
+	if u.P == nil || !u.P.VerifyUrl(ppId,  id, agent.systemStrategy()) {
 		// 403没权限
 		ctx.Output.SetStatus(http.StatusForbidden)
 		ctx.ResponseWriter.Write([]byte("暂无权限"))
