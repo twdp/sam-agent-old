@@ -63,16 +63,33 @@ var SamFilter = func(ctx *context.Context) {
 		return
 	}
 
-	var u *UserInfo
+	var systemInfo *moduleInfo
+	if s, err := a.loadSysInfo(); err != nil {
+		logs.Error("load system info failed. strategy: Child")
+		systemInfo = &moduleInfo{
+			keepSign: false,
+			permissionType:Child,
+			routes:make(map[string][]*tree),
+		}
+	} else {
+		systemInfo = s
+	}
+
+
+		var u *UserInfo
 
 	if uu, ok := ctx.Input.Session(SamUserInfoSessionKey).(*UserInfo); !ok {
 
+		if !systemInfo.keepSign {
+			ctx.Output.SetStatus(http.StatusUnauthorized)
+			ctx.ResponseWriter.Write([]byte("请重新登录"))
+			return
+		}
 		// 获取token信息
 		token := ctx.Input.Header(SamTokenHeaderName)
 		if token == "" {
 			token = ctx.GetCookie(SamTokenCookieName)
 		}
-		token = "abc"
 
 		if token == "" {
 			ctx.Output.SetStatus(http.StatusUnauthorized)
@@ -107,7 +124,7 @@ var SamFilter = func(ctx *context.Context) {
 		ppId = ppid
 	}
 
-	if u.P == nil || !u.P.VerifyUrl(ppId,  id, a.systemStrategy()) {
+	if u.P == nil || !u.P.VerifyUrl(ppId,  id, systemInfo.permissionType) {
 		// 403没权限
 		ctx.Output.SetStatus(http.StatusForbidden)
 		ctx.ResponseWriter.Write([]byte("暂无权限"))

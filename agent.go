@@ -53,6 +53,7 @@ type tree struct {
 type moduleInfo struct {
 	routes map[string][]*tree
 	permissionType int8
+	keepSign bool
 }
 
 type agent struct {
@@ -137,21 +138,13 @@ func (a *agent) loadSysInfo() (*moduleInfo, error) {
 			}
 			ss := &moduleInfo{
 				permissionType: s.PermissionType,
+				keepSign: s.KeepSign,
 				routes: routes,
 			}
 
 			cache.Put("---", ss, time.Minute)
 			return ss, nil
 		}
-	}
-}
-
-func (a *agent) systemStrategy() int8 {
-	if s, err := a.loadSysInfo(); err != nil {
-		logs.Error("load system info failed. strategy: Child")
-		return Child
-	} else {
-		return s.permissionType
 	}
 }
 

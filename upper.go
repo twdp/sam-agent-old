@@ -19,6 +19,9 @@ type SystemInfo struct {
 	// 权限类型
 	PermissionType int8
 
+	// 是否使用token保持登录
+	KeepSign bool
+
 	// 配置在sam中的url列表
 	Routers []*Router
 }
