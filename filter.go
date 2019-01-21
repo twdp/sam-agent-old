@@ -13,18 +13,6 @@ const (
 	SamTokenHeaderName = "token"
 )
 
-// 权限类型
-const (
-	OnlyOperationPermission = iota
-	Equality
-	Child
-)
-
-const (
-	Anonymous = iota
-	OnlyNeedLogin
-	CheckRolePermission
-)
 
 type UserInfo struct {
 	// 用户id
@@ -45,22 +33,7 @@ type UserInfo struct {
 	p PermissionMode
 }
 
-//
-var SamAgent SamAgentFacade
 
-type SamAgentFacade interface {
-
-	//
-	// @return int64  id
-	// @return string 正则表达的url
-	// @return string   method
-	// @return strategy Anonymous\OnlyNeedLogin\CheckRolePermission
-	// @return error  -> 验证时报错
-	CheckPermissionStrategy(ctx *context.Context) (int64, string, string, int8, error)
-
-	// 验证token
-	VerifyToken(token string) (*UserInfo, error)
-}
 
 // 查找路径和方法，是否需要登录或验证权限
 // 如果需要登录或验证权限，则获取当前用户信息
@@ -75,15 +48,11 @@ var SamFilter = func(ctx *context.Context) {
 
 	var strategy int8 = Anonymous
 	var id int64 = 0
-	url := ""
-	m := ""
 
-	if _id, _url, _m, _strategy, err := SamAgent.CheckPermissionStrategy(ctx); err != nil {
+	if _id, _strategy, err := agent.CheckPermissionStrategy(ctx); err != nil {
 		logs.Error("sam filter error: %v", err)
 	} else {
 		id = _id
-		url = _url
-		m = _m
 		strategy = _strategy
 		return
 	}
@@ -103,7 +72,7 @@ var SamFilter = func(ctx *context.Context) {
 			ctx.ResponseWriter.Write([]byte("请重新登录"))
 		}
 		// 根据token获取用户信息
-		if us, err := SamAgent.VerifyToken(token); err != nil {
+		if us, err := agent.verifyToken(token); err != nil {
 			ctx.Output.SetStatus(http.StatusUnauthorized)
 			ctx.ResponseWriter.Write([]byte(err.Error()))
 		} else {
@@ -129,7 +98,7 @@ var SamFilter = func(ctx *context.Context) {
 		ppId = ppid
 	}
 
-	if u.p == nil || !u.p.VerifyUrl(ppId,  id, url, m, 0) {
+	if u.p == nil || !u.p.VerifyUrl(ppId,  id, strategy) {
 		// 403没权限
 		ctx.Output.SetStatus(http.StatusForbidden)
 		ctx.ResponseWriter.Write([]byte("暂无权限"))

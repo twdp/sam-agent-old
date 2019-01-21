@@ -15,9 +15,13 @@ github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712/go.mod h1:YO35OhQPt
 github.com/elazarl/go-bindata-assetfs v1.0.0/go.mod h1:v+YaWX3bdea5J/mo8dSETolEo7R71Vk1u8bnjau5yw4=
 github.com/go-redis/redis v6.14.2+incompatible/go.mod h1:NAIEuMOZ/fxfXJIrKDQDz8wamY7mA7PouImQ2Jvg6kA=
 github.com/go-sql-driver/mysql v1.4.1/go.mod h1:zAC/RDZ24gD3HViQzih4MyKcchzm+sOG5ZlKdlhCg5w=
+github.com/goburrow/cache v0.1.0 h1:fLNGLIWhng4Vw3AjbafHou7R3M5wiaz2tMhg6aFkqXM=
+github.com/goburrow/cache v0.1.0/go.mod h1:8oxkfud4hvjO4tNjEKZfEd+LrpDVDlBIauGYsWGEzio=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
 github.com/golang/snappy v0.0.0-20180518054509-2e65f85255db/go.mod h1:/XxbfmMg8lxefKM7IXC3fBNl/7bRcc72aCRzEWrmP2Q=
 github.com/gomodule/redigo v2.0.0+incompatible/go.mod h1:B4C85qUVwatsJoIUNIfCRsp7qO0iAmpGFZ4EELWSbC4=
+github.com/hprose/hprose-golang v2.0.4+incompatible h1:xUZLSShgv5+KCfK3RCsac8DyWKxBPt9hH3KK3TA1f0c=
+github.com/hprose/hprose-golang v2.0.4+incompatible/go.mod h1:FfwwCUQFF3f5t03SrzdSghXVZkC01uEJS6Xwzcz0NOo=
 github.com/lib/pq v1.0.0/go.mod h1:5WUZQaWbwv1U+lTReE5YruASi9Al49XbQIvNi/34Woo=
 github.com/mattn/go-sqlite3 v1.10.0/go.mod h1:FPy6KqzDD04eiIsT53CuJW3U88zkxoIYsOqkbpncsNc=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
@@ -34,3 +38,5 @@ golang.org/x/net v0.0.0-20181114220301-adae6a3d119a/go.mod h1:mL1N/T3taQHkDXs73r
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/yaml.v2 v2.2.1 h1:mUhvW9EsL+naU5Q3cakzfE91YhliOondGd6ZrsDBHQE=
 gopkg.in/yaml.v2 v2.2.1/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
+tianwei.pro/beego-guava v0.0.0-20190108132444-348c37386e91 h1:hw0/MOJnGkOv9OC2i++itqJprbZnRvEceIF/mbN2gEA=
+tianwei.pro/beego-guava v0.0.0-20190108132444-348c37386e91/go.mod h1:8Zp0HlkTmlTFCmmN2S0SEA/Y2HTLHrBBwryQrlI0ND8=

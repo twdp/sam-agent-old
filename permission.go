@@ -11,7 +11,7 @@ const (
 
 type PermissionMode interface {
 	// 需要验证的url
-	VerifyUrl(branchId, id int64, url string, method string, sType int8) bool
+	VerifyUrl(branchId, id int64, sType int8) bool
 }
 
 
@@ -27,7 +27,7 @@ type Permission struct {
 	PermissionSet []int64
 }
 
-func (p *Permission) VerifyUrl(branchId, id int64, url string, method string, sType int8) bool {
+func (p *Permission) VerifyUrl(branchId, id int64, sType int8) bool {
 	if sType != OnlyOperationPermission {
 		// 需要验证数据权限
 		hasPermission := false
