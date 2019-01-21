@@ -53,7 +53,7 @@ func init() {
 	}
 }
 
-type Tree struct {
+type tree struct {
 	beego.Tree
 	id int64
 	Type int8
@@ -74,7 +74,7 @@ type SystemInfo struct {
 }
 
 type isystemInfo struct {
-	routes map[string][]*Tree
+	routes map[string][]*tree
 	permissionType int8
 }
 
@@ -143,15 +143,15 @@ func (a *Agent) loadSysInfo() (*isystemInfo, error) {
 		if s, err := SamAgent.LoadSystemInfo(a.appKey, a.secret); err != nil {
 			return nil, err
 		} else {
-			routes := make(map[string][]*Tree)
+			routes := make(map[string][]*tree)
 			for k := range beego.HTTPMETHOD  {
-				routes[k] = []*Tree{}
+				routes[k] = []*tree{}
 			}
 
 			for _, v := range s.Routers {
 				tt := beego.NewTree()
 				tt.AddRouter(v.Url, "sam")
-				t := &Tree{
+				t := &tree{
 					Tree: *tt,
 					id: v.Id,
 					Type: v.Type,
@@ -192,7 +192,7 @@ func (a *Agent) CheckPermissionStrategy(ctx *context.Context) (int64, int8, erro
 	if s, err := a.loadSysInfo(); err != nil {
 		return 0, CheckRolePermission, err
 	} else {
-		var tree *Tree
+		var tree *tree
 		routers := s.routes[method]
 		for _, r := range routers {
 			obj := r.Match(path, ctx)
