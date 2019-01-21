@@ -49,7 +49,7 @@ var SamFilter = func(ctx *context.Context) {
 	var urlStrategy int8 = Anonymous
 	var id int64 = 0
 
-	if _id, _strategy, err := agent.CheckPermissionStrategy(ctx); err != nil {
+	if _id, _strategy, err := a.CheckPermissionStrategy(ctx); err != nil {
 		logs.Error("sam filter error: %v", err)
 		ctx.Output.SetStatus(http.StatusUnauthorized)
 		ctx.ResponseWriter.Write([]byte(err.Error()))
@@ -80,7 +80,7 @@ var SamFilter = func(ctx *context.Context) {
 			return
 		}
 		// 根据token获取用户信息
-		if us, err := agent.verifyToken(token); err != nil {
+		if us, err := a.verifyToken(token); err != nil {
 			ctx.Output.SetStatus(http.StatusUnauthorized)
 			ctx.ResponseWriter.Write([]byte(err.Error()))
 			return
@@ -107,7 +107,7 @@ var SamFilter = func(ctx *context.Context) {
 		ppId = ppid
 	}
 
-	if u.P == nil || !u.P.VerifyUrl(ppId,  id, agent.systemStrategy()) {
+	if u.P == nil || !u.P.VerifyUrl(ppId,  id, a.systemStrategy()) {
 		// 403没权限
 		ctx.Output.SetStatus(http.StatusForbidden)
 		ctx.ResponseWriter.Write([]byte("暂无权限"))

@@ -13,31 +13,10 @@ import (
 	"time"
 )
 
-// 权限类型
-const (
-	OnlyOperationPermission = iota
-	Equality
-	Child
-)
-
-const (
-	Anonymous = iota
-	OnlyNeedLogin
-	CheckRolePermission
-)
 
 var SamAgent SamAgentFacade
 
-var agent *Agent
-
-type SamAgentFacade interface {
-
-	// 根据appKey 和secret获取系统信息
-	LoadSystemInfo(appKey, secret string) (*SystemInfo, error)
-
-	// 验证token
-	VerifyToken(token string) (*UserInfo, error)
-}
+var a *agent
 
 func init() {
 	samServers := beego.AppConfig.DefaultString("samServers", "none")
@@ -48,8 +27,18 @@ func init() {
 		client := rpc.NewClient(address...)
 		client.UseService(&SamAgent)
 	}
-	agent = &Agent{
+	appKey := beego.AppConfig.String("appKey")
+	if appKey == "" {
+		logs.Warn("app key is empty")
+	}
+	secret := beego.AppConfig.String("secret")
+	if secret == "" {
+		logs.Warn("secret is empty")
+	}
+	a = &agent{
 		cacheManager: make(map[string]cache.Cache),
+		appKey: appKey,
+		secret: secret,
 	}
 }
 
@@ -59,26 +48,14 @@ type tree struct {
 	Type int8
 }
 
-type Router struct {
-	Id int64
-	Url string
-	Method string
-	Type int8
-}
 
-type SystemInfo struct {
 
-	PermissionType int8
-
-	Routers []*Router
-}
-
-type isystemInfo struct {
+type moduleInfo struct {
 	routes map[string][]*tree
 	permissionType int8
 }
 
-type Agent struct {
+type agent struct {
 	sync.Mutex
 
 	appKey string
@@ -89,7 +66,7 @@ type Agent struct {
 	cacheManager map[string]cache.Cache
 }
 
-func (a *Agent) loadCacheByKey(key string) cache.Cache {
+func (a *agent) loadCacheByKey(key string) cache.Cache {
 	if c, exist := a.cacheManager[key]; exist {
 		return c
 	} else {
@@ -114,7 +91,7 @@ const (
 	systemInfo = "_system_info_"
 )
 
-func (a *Agent) verifyToken(token string) (*UserInfo, error) {
+func (a *agent) verifyToken(token string) (*UserInfo, error) {
 	a.checkAgent()
 	cache := a.loadCacheByKey(tokenKey)
 	if cache.IsExist(token) {
@@ -129,16 +106,16 @@ func (a *Agent) verifyToken(token string) (*UserInfo, error) {
 	}
 }
 
-func (a *Agent) checkAgent() {
+func (a *agent) checkAgent() {
 	if SamAgent == nil {
 		panic("sam agent is nil.")
 	}
 }
-func (a *Agent) loadSysInfo() (*isystemInfo, error) {
+func (a *agent) loadSysInfo() (*moduleInfo, error) {
 	a.checkAgent()
 	cache := a.loadCacheByKey(systemInfo)
 	if cache.IsExist("---") {
-		return cache.Get("---").(*isystemInfo), nil
+		return cache.Get("---").(*moduleInfo), nil
 	} else {
 		if s, err := SamAgent.LoadSystemInfo(a.appKey, a.secret); err != nil {
 			return nil, err
@@ -158,7 +135,7 @@ func (a *Agent) loadSysInfo() (*isystemInfo, error) {
 				}
 				routes[v.Method] = append(routes[v.Method], t)
 			}
-			ss := &isystemInfo{
+			ss := &moduleInfo{
 				permissionType: s.PermissionType,
 				routes: routes,
 			}
@@ -169,7 +146,7 @@ func (a *Agent) loadSysInfo() (*isystemInfo, error) {
 	}
 }
 
-func (a *Agent) systemStrategy() int8 {
+func (a *agent) systemStrategy() int8 {
 	if s, err := a.loadSysInfo(); err != nil {
 		logs.Error("load system info failed. strategy: Child")
 		return Child
@@ -185,7 +162,7 @@ func (a *Agent) systemStrategy() int8 {
 // @return string   method
 // @return strategy Anonymous\OnlyNeedLogin\CheckRolePermission
 // @return error  -> 验证时报错
-func (a *Agent) CheckPermissionStrategy(ctx *context.Context) (int64, int8, error) {
+func (a *agent) CheckPermissionStrategy(ctx *context.Context) (int64, int8, error) {
 	method := ctx.Input.Method()
 	path := ctx.Input.URL()
 
