@@ -16,6 +16,8 @@ const (
 // 系统信息
 type SystemInfo struct {
 
+	Id int64
+
 	// 权限类型
 	PermissionType int8
 
