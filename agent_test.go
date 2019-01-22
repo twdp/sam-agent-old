@@ -34,8 +34,10 @@ func (s *SamAgentFacadeImpl) VerifyToken(token string) (*UserInfo, error) {
 		UserName:"1",
 		Email:"s",
 		Phone: "1",
-		P: &Permission{
-			PermissionSet: []int64{1,2},
+		Permissions: []*Permission{
+			{
+				PermissionSet: []int64{1, 2},
+			},
 		},
 	}, nil
 }

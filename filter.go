@@ -30,7 +30,7 @@ type UserInfo struct {
 	// 手机号  可用于发送验证信息之类的
 	Phone string
 
-	P *Permission
+	Permissions []*Permission
 }
 
 
@@ -124,7 +124,19 @@ var SamFilter = func(ctx *context.Context) {
 		ppId = ppid
 	}
 
-	if u.P == nil || !u.P.VerifyUrl(ppId,  id, systemInfo.permissionType) {
+	hasPermission := false
+
+
+	if u != nil {
+		for _, p := range u.Permissions {
+			if p.VerifyUrl(ppId, id, systemInfo.permissionType) {
+				hasPermission = true
+				break
+			}
+		}
+	}
+
+	if !hasPermission {
 		// 403没权限
 		ctx.Output.SetStatus(http.StatusForbidden)
 		ctx.ResponseWriter.Write([]byte("暂无权限"))
