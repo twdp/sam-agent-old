@@ -51,7 +51,7 @@ var SamFilter = func(ctx *context.Context) {
 
 	if _id, _strategy, err := a.CheckPermissionStrategy(ctx); err != nil {
 		logs.Error("sam filter error: %v", err)
-		ctx.Output.SetStatus(http.StatusUnauthorized)
+		ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
 		ctx.ResponseWriter.Write([]byte(err.Error()))
 		return
 	} else {
@@ -81,7 +81,7 @@ var SamFilter = func(ctx *context.Context) {
 	if uu, ok := ctx.Input.Session(SamUserInfoSessionKey).(*UserInfo); !ok {
 
 		if !systemInfo.keepSign {
-			ctx.Output.SetStatus(http.StatusUnauthorized)
+			ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
 			ctx.ResponseWriter.Write([]byte("请重新登录"))
 			return
 		}
@@ -92,13 +92,13 @@ var SamFilter = func(ctx *context.Context) {
 		}
 
 		if token == "" {
-			ctx.Output.SetStatus(http.StatusUnauthorized)
+			ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
 			ctx.ResponseWriter.Write([]byte("请重新登录"))
 			return
 		}
 		// 根据token获取用户信息
 		if us, err := a.verifyToken(token); err != nil {
-			ctx.Output.SetStatus(http.StatusUnauthorized)
+			ctx.ResponseWriter.WriteHeader(http.StatusUnauthorized)
 			ctx.ResponseWriter.Write([]byte(err.Error()))
 			return
 		} else {
@@ -138,7 +138,7 @@ var SamFilter = func(ctx *context.Context) {
 
 	if !hasPermission {
 		// 403没权限
-		ctx.Output.SetStatus(http.StatusForbidden)
+		ctx.ResponseWriter.WriteHeader(http.StatusForbidden)
 		ctx.ResponseWriter.Write([]byte("暂无权限"))
 	}
 
