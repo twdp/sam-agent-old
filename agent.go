@@ -98,7 +98,7 @@ func (a *agent) verifyToken(token string) (*UserInfo, error) {
 	if cache.IsExist(token) {
 		return cache.Get(token).(*UserInfo), nil
 	} else {
-		if u, err := SamAgent.VerifyToken(token); err != nil {
+		if u, err := SamAgent.VerifyToken(a.appKey, a.secret, token); err != nil {
 			return u, err
 		} else {
 			cache.Put(token, u, time.Minute)
