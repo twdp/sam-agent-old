@@ -49,5 +49,5 @@ type SamAgentFacade interface {
 	LoadSystemInfo(appKey, secret string) (*SystemInfo, error)
 
 	// 验证token
-	VerifyToken(token string) (*UserInfo, error)
+	VerifyToken(appKey, secret, token string) (*UserInfo, error)
 }
