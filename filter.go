@@ -113,6 +113,11 @@ var SamFilter = func(ctx *context.Context) {
 		return
 	}
 
+	// owner 可以操作所有的操作
+	if len(u.Permissions) > 0 && u.Permissions[0].RoleName == "owner" {
+		return
+	}
+
 	permissionId := ctx.Input.Param("permissionId")
 	if permissionId == "" {
 		permissionId = ctx.Input.Param(":permissionId")
